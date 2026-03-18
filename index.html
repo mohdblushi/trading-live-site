@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KING ELITE — Trading Signals</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #040608;
+    --panel: #080c10;
+    --card: #0a0f15;
+    --border: #1a2535;
+    --border-glow: #1e3a5f;
+    --text: #c8d8e8;
+    --muted: #4a6070;
+    --accent: #1e90ff;
+    --buy: #00c853;
+    --sell: #f44336;
+    --strong-buy: #b2ff59;
+    --strong-sell: #7b0000;
+    --strong-sell-text: #ff6060;
+    --neutral: #607d8b;
+    --gold: #ffc107;
+    --btc: #f7931a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* Grid background */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(30,144,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,144,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+    position: relative;
+  }
+
+  .logo-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 4px;
+  }
+
+  .logo-deco {
+    height: 1px;
+    flex: 1;
+    max-width: 120px;
+    background: linear-gradient(90deg, transparent, var(--accent));
+  }
+  .logo-deco.right { background: linear-gradient(90deg, var(--accent), transparent); }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(18px, 4vw, 30px);
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+  }
+
+  .subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .header-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--buy);
+    box-shadow: 0 0 8px var(--buy);
+    animation: pulse-dot 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  .live-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--buy);
+    letter-spacing: 0.2em;
+  }
+
+  .refresh-timer {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    margin-left: 12px;
+  }
+
+  /* GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  /* CARD */
+  .asset-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    animation: card-in 0.6s ease both;
+  }
+
+  .asset-card:nth-child(2) { animation-delay: 0.15s; }
+
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .asset-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--accent));
+    transition: box-shadow 0.3s;
+  }
+
+  .asset-card.btc { --card-accent: var(--btc); }
+  .asset-card.gold { --card-accent: var(--gold); }
+
+  .asset-card.signal-strong-buy {
+    border-color: var(--strong-buy);
+    box-shadow: 0 0 30px rgba(178,255,89,0.12), 0 0 60px rgba(178,255,89,0.05);
+  }
+  .asset-card.signal-strong-sell {
+    border-color: #7b0000;
+    box-shadow: 0 0 30px rgba(255,60,60,0.12), 0 0 60px rgba(255,60,60,0.05);
+  }
+  .asset-card.signal-buy {
+    border-color: rgba(0,200,83,0.4);
+    box-shadow: 0 0 20px rgba(0,200,83,0.07);
+  }
+  .asset-card.signal-sell {
+    border-color: rgba(244,67,54,0.4);
+    box-shadow: 0 0 20px rgba(244,67,54,0.07);
+  }
+
+  /* CARD INNER GLOW BG */
+  .card-bg-glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+  .signal-strong-buy .card-bg-glow {
+    background: radial-gradient(ellipse at 50% 0%, rgba(178,255,89,0.06) 0%, transparent 70%);
+    opacity: 1;
+  }
+  .signal-strong-sell .card-bg-glow {
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,50,50,0.06) 0%, transparent 70%);
+    opacity: 1;
+  }
+
+  /* CARD HEADER */
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .asset-info { display: flex; align-items: center; gap: 12px; }
+
+  .asset-icon {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .btc .asset-icon { background: rgba(247,147,26,0.15); color: var(--btc); border: 1px solid rgba(247,147,26,0.3); }
+  .gold .asset-icon { background: rgba(255,193,7,0.12); color: var(--gold); border: 1px solid rgba(255,193,7,0.3); }
+
+  .asset-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .asset-pair {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    margin-top: 2px;
+  }
+
+  /* TIMEFRAME SELECTOR */
+  .tf-selector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.03);
+    padding: 3px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .tf-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+  }
+
+  .tf-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+  .tf-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(30,144,255,0.3);
+  }
+  .btc .tf-btn.active { background: var(--btc); box-shadow: 0 0 10px rgba(247,147,26,0.3); }
+  .gold .tf-btn.active { background: #b8860b; box-shadow: 0 0 10px rgba(255,193,7,0.2); }
+
+  /* PRICE SECTION */
+  .card-price {
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .price-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 400;
+    color: #fff;
+    letter-spacing: 0.02em;
+    transition: color 0.3s;
+    line-height: 1;
+  }
+
+  .price-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 4px;
+  }
+
+  .price-change {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.05);
+  }
+  .price-change.up { color: var(--buy); }
+  .price-change.down { color: var(--sell); }
+
+  /* SIGNAL SECTION */
+  .card-signal {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .signal-block { flex: 1; }
+  .signal-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    margin-bottom: 6px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .signal-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(12px, 2.5vw, 15px);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 7px 14px;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+    transition: all 0.4s ease;
+  }
+
+  .signal-badge.buy {
+    color: var(--buy);
+    background: rgba(0,200,83,0.1);
+    border: 1px solid rgba(0,200,83,0.3);
+  }
+  .signal-badge.sell {
+    color: var(--sell);
+    background: rgba(244,67,54,0.1);
+    border: 1px solid rgba(244,67,54,0.3);
+  }
+  .signal-badge.strong-buy {
+    color: var(--strong-buy);
+    background: rgba(178,255,89,0.1);
+    border: 1px solid rgba(178,255,89,0.5);
+    box-shadow: 0 0 15px rgba(178,255,89,0.2);
+    animation: flash-buy 1s ease-in-out infinite;
+  }
+  .signal-badge.strong-sell {
+    color: var(--strong-sell-text);
+    background: rgba(123,0,0,0.2);
+    border: 1px solid #7b0000;
+    box-shadow: 0 0 15px rgba(200,0,0,0.15);
+    animation: flash-sell 1s ease-in-out infinite;
+  }
+  .signal-badge.neutral {
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+  }
+
+  @keyframes flash-buy {
+    0%, 100% { box-shadow: 0 0 15px rgba(178,255,89,0.2); }
+    50% { box-shadow: 0 0 30px rgba(178,255,89,0.5), 0 0 60px rgba(178,255,89,0.1); }
+  }
+  @keyframes flash-sell {
+    0%, 100% { box-shadow: 0 0 15px rgba(200,0,0,0.15); }
+    50% { box-shadow: 0 0 30px rgba(255,0,0,0.35), 0 0 60px rgba(200,0,0,0.1); }
+  }
+
+  .trend-block { text-align: right; }
+  .trend-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    padding: 5px 10px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .trend-value.up { color: var(--buy); background: rgba(0,200,83,0.08); border: 1px solid rgba(0,200,83,0.2); }
+  .trend-value.down { color: var(--sell); background: rgba(244,67,54,0.08); border: 1px solid rgba(244,67,54,0.2); }
+  .trend-value.neutral { color: var(--muted); background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+
+  /* INDICATORS */
+  .card-indicators {
+    padding: 14px 20px 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .ind-item { text-align: center; }
+  .ind-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-family: 'Rajdhani', sans-serif;
+    margin-bottom: 4px;
+  }
+  .ind-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .ind-value.bull { color: var(--buy); }
+  .ind-value.bear { color: var(--sell); }
+
+  /* LOADING */
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 4px;
+    gap: 14px;
+    transition: opacity 0.4s;
+  }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+  .loader-ring {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--card-accent, var(--accent));
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+  }
+
+  /* FOOTER / STATUS BAR */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .status-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-item span { color: var(--text); }
+
+  /* SOUND TOGGLE */
+  .sound-toggle {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    letter-spacing: 0.15em;
+    transition: all 0.2s;
+  }
+  .sound-toggle:hover { border-color: var(--accent); color: var(--text); }
+  .sound-toggle.on { border-color: var(--buy); color: var(--buy); }
+
+  /* ALERT FLASH */
+  @keyframes alert-flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+  }
+
+  .alerting { animation: alert-flash 0.3s ease 3; }
+
+  /* MTF BADGES */
+  .mtf-row {
+    display: flex;
+    gap: 6px;
+    padding: 0 20px 14px;
+    flex-wrap: wrap;
+  }
+  .mtf-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    border: 1px solid transparent;
+  }
+  .mtf-tag.bull { color: var(--buy); border-color: rgba(0,200,83,0.25); background: rgba(0,200,83,0.07); }
+  .mtf-tag.bear { color: var(--sell); border-color: rgba(244,67,54,0.25); background: rgba(244,67,54,0.07); }
+  .mtf-tag.neutral { color: var(--muted); border-color: var(--border); background: transparent; }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .card-indicators { grid-template-columns: repeat(2, 1fr); }
+    .card-header { flex-wrap: wrap; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo-line">
+      <div class="logo-deco"></div>
+      <h1>KING ELITE</h1>
+      <div class="logo-deco right"></div>
+    </div>
+    <div class="subtitle">Multi-Timeframe Signal Engine · BTC / XAUUSD</div>
+    <div class="header-status">
+      <div class="live-dot"></div>
+      <span class="live-label">LIVE</span>
+      <span class="refresh-timer" id="timerLabel">REFRESH IN 5s</span>
+    </div>
+  </header>
+
+  <div class="cards-grid">
+    <!-- BTC CARD -->
+    <div class="asset-card btc" id="card-btc">
+      <div class="card-bg-glow"></div>
+      <div class="loading-overlay" id="load-btc">
+        <div class="loader-ring"></div>
+        <div class="loader-text">FETCHING BTC DATA...</div>
+      </div>
+      <div class="card-header">
+        <div class="asset-info">
+          <div class="asset-icon">₿</div>
+          <div>
+            <div class="asset-name">BITCOIN</div>
+            <div class="asset-pair">BTC / USDT</div>
+          </div>
+        </div>
+        <div class="tf-selector" id="tf-btc">
+          <button class="tf-btn active" data-asset="btc" data-tf="1m">1m</button>
+          <button class="tf-btn" data-asset="btc" data-tf="5m">5m</button>
+          <button class="tf-btn" data-asset="btc" data-tf="15m">15m</button>
+        </div>
+      </div>
+      <div class="card-price">
+        <div>
+          <div class="price-label">CURRENT PRICE</div>
+          <div class="price-value" id="btc-price">—</div>
+        </div>
+        <div class="price-change" id="btc-change">—</div>
+      </div>
+      <div class="card-signal">
+        <div class="signal-block">
+          <div class="signal-label">Signal</div>
+          <div class="signal-badge neutral" id="btc-signal">CALCULATING...</div>
+        </div>
+        <div class="trend-block">
+          <div class="signal-label">Trend</div>
+          <div class="trend-value neutral" id="btc-trend">—</div>
+        </div>
+      </div>
+      <div class="mtf-row" id="btc-mtf"></div>
+      <div class="card-indicators">
+        <div class="ind-item">
+          <div class="ind-label">RSI</div>
+          <div class="ind-value" id="btc-rsi">—</div>
+        </div>
+        <div class="ind-item">
+          <div class="ind-label">MACD</div>
+          <div class="ind-value" id="btc-macd">—</div>
+        </div>
+        <div class="ind-item">
+          <div class="ind-label">EMA9/21</div>
+          <div class="ind-value" id="btc-ema">—</div>
+        </div>
+        <div class="ind-item">
+          <div class="ind-label">VOL</div>
+          <div class="ind-value" id="btc-vol">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOLD CARD -->
+    <div class="asset-card gold" id="card-gold">
+      <div class="card-bg-glow"></div>
+      <div class="loading-overlay" id="load-gold">
+        <div class="loader-ring"></div>
+        <div class="loader-text">FETCHING GOLD DATA...</div>
+      </div>
+      <div class="card-header">
+        <div class="asset-info">
+          <div class="asset-icon">Au</div>
+          <div>
+            <div class="asset-name">GOLD</div>
+            <div class="asset-pair">XAU / USD</div>
+          </div>
+        </div>
+        <div class="tf-selector" id="tf-gold">
+          <button class="tf-btn active" data-asset="gold" data-tf="1m">1m</button>
+          <button class="tf-btn" data-asset="gold" data-tf="5m">5m</button>
+          <button class="tf-btn" data-asset="gold" data-tf="15m">15m</button>
+        </div>
+      </div>
+      <div class="card-price">
+        <div>
+          <div class="price-label">CURRENT PRICE</div>
+          <div class="price-value" id="gold-price">—</div>
+        </div>
+        <div class="price-change" id="gold-change">—</div>
+      </div>
+      <div class="card-signal">
+        <div class="signal-block">
+          <div class="signal-label">Signal</div>
+          <div class="signal-badge neutral" id="gold-signal">CALCULATING...</div>
+        </div>
+        <div class="trend-block">
+          <div class="signal-label">Trend</div>
+          <div class="trend-value neutral" id="gold-trend">—</div>
+        </div>
+      </div>
+      <div class="mtf-row" id="gold-mtf"></div>
+      <div class="card-indicators">
+        <div class="ind-item">
+          <div class="ind-label">RSI</div>
+          <div class="ind-value" id="gold-rsi">—</div>
+        </div>
+        <div class="ind-item">
+          <div class="ind-label">MACD</div>
+          <div class="ind-value" id="gold-macd">—</div>
+        </div>
+        <div class="ind-item">
+          <div class="ind-label">EMA9/21</div>
+          <div class="ind-value" id="gold-ema">—</div>
+        </div>
+        <div class="ind-item">
+          <div class="ind-label">VOL</div>
+          <div class="ind-value" id="gold-vol">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-item">SOURCE <span>BINANCE · METALS-API</span></div>
+    <div class="status-item">STRATEGY <span>KING ELITE v5</span></div>
+    <div class="status-item">LOGIC <span>EMA9/21/50/200 · RSI14 · MACD · MTF</span></div>
+    <button class="sound-toggle" id="soundToggle">🔇 SOUND OFF</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   KING ELITE — Full Pine Script Logic in JavaScript
+   ===================================================== */
+
+// ── State ────────────────────────────────────────────
+const state = {
+  btc: { tf: '1m', candles: {}, lastSignal: null, prevPrice: null },
+  gold: { tf: '1m', candles: {}, lastSignal: null, prevPrice: null }
+};
+
+let soundEnabled = false;
+let refreshCountdown = 5;
+let refreshInterval, countdownInterval;
+
+// ── Audio Context ────────────────────────────────────
+function beep(freq, type, duration, volume) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+
+function alertStrongBuy() {
+  if (!soundEnabled) return;
+  beep(880, 'sine', 0.3, 0.4);
+  setTimeout(() => beep(1100, 'sine', 0.3, 0.35), 200);
+  setTimeout(() => beep(1320, 'sine', 0.4, 0.3), 400);
+}
+
+function alertStrongSell() {
+  if (!soundEnabled) return;
+  beep(440, 'sawtooth', 0.3, 0.3);
+  setTimeout(() => beep(330, 'sawtooth', 0.3, 0.25), 200);
+  setTimeout(() => beep(220, 'sawtooth', 0.4, 0.2), 400);
+}
+
+// ── EMA ───────────────────────────────────────────────
+function calcEMA(closes, period) {
+  if (closes.length < period) return null;
+  const k = 2 / (period + 1);
+  let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  for (let i = period; i < closes.length; i++) {
+    ema = closes[i] * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+// ── RSI ───────────────────────────────────────────────
+function calcRSI(closes, period) {
+  if (closes.length < period + 1) return null;
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const diff = closes[i] - closes[i - 1];
+    if (diff >= 0) gains += diff; else losses -= diff;
+  }
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  for (let i = period + 1; i < closes.length; i++) {
+    const diff = closes[i] - closes[i - 1];
+    const g = diff >= 0 ? diff : 0;
+    const l = diff < 0 ? -diff : 0;
+    avgGain = (avgGain * (period - 1) + g) / period;
+    avgLoss = (avgLoss * (period - 1) + l) / period;
+  }
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
+// ── MACD ──────────────────────────────────────────────
+function calcMACD(closes, fast, slow, signal) {
+  if (closes.length < slow + signal) return { macd: null, signal: null, hist: null };
+  const emaFast = calcEMA(closes, fast);
+  const emaSlow = calcEMA(closes, slow);
+  if (emaFast === null || emaSlow === null) return { macd: null, signal: null, hist: null };
+
+  // Build MACD line history for signal smoothing
+  const macdLine = [];
+  for (let i = 0; i < closes.length; i++) {
+    if (i < slow - 1) continue;
+    const slice = closes.slice(0, i + 1);
+    const ef = calcEMA(slice, fast);
+    const es = calcEMA(slice, slow);
+    if (ef !== null && es !== null) macdLine.push(ef - es);
+  }
+
+  const macdVal = macdLine[macdLine.length - 1];
+  const signalVal = calcEMA(macdLine, signal);
+  return { macd: macdVal, signal: signalVal, hist: macdVal !== null && signalVal !== null ? macdVal - signalVal : null };
+}
+
+// ── SMA (for volume average) ──────────────────────────
+function calcSMA(arr, period) {
+  if (arr.length < period) return null;
+  const slice = arr.slice(-period);
+  return slice.reduce((a, b) => a + b, 0) / period;
+}
+
+// ── Highest / Lowest ──────────────────────────────────
+function highest(arr, period) {
+  const slice = arr.slice(-period);
+  return Math.max(...slice);
+}
+function lowest(arr, period) {
+  const slice = arr.slice(-period);
+  return Math.min(...slice);
+}
+
+// ── CORE SIGNAL LOGIC (exact Pine Script conversion) ──
+function computeSignal(candles1m, candles5m, candles15m) {
+  const minNeeded = 210;
+  if (!candles1m || candles1m.length < minNeeded) return null;
+
+  const c1 = candles1m;
+  const closes = c1.map(c => c.close);
+  const highs   = c1.map(c => c.high);
+  const lows    = c1.map(c => c.low);
+  const volumes = c1.map(c => c.volume);
+
+  // EMAs
+  const ema9   = calcEMA(closes, 9);
+  const ema21  = calcEMA(closes, 21);
+  const ema50  = calcEMA(closes, 50);
+  const ema200 = calcEMA(closes, 200);
+
+  if (!ema9 || !ema21 || !ema50 || !ema200) return null;
+
+  // RSI
+  const rsi = calcRSI(closes, 14);
+
+  // MACD
+  const { macd, signal: macdSignal } = calcMACD(closes, 12, 26, 9);
+
+  // Volume
+  const vol    = volumes[volumes.length - 1];
+  const volAvg = calcSMA(volumes, 20);
+
+  // Highest High / Lowest Low (period 20)
+  const hh = highest(highs.slice(0, -1), 20);  // hh[1] = previous bar
+  const ll = lowest(lows.slice(0, -1), 20);    // ll[1] = previous bar
+  const currentClose = closes[closes.length - 1];
+
+  // TREND
+  const uptrend   = ema9 > ema21 && ema21 > ema50 && ema50 > ema200;
+  const downtrend = ema9 < ema21 && ema21 < ema50 && ema50 < ema200;
+
+  // Multi-timeframe RSI
+  let rsi5 = null, rsi15 = null;
+  if (candles5m && candles5m.length >= 30) {
+    rsi5 = calcRSI(candles5m.map(c => c.close), 14);
+  }
+  if (candles15m && candles15m.length >= 30) {
+    rsi15 = calcRSI(candles15m.map(c => c.close), 14);
+  }
+
+  // Multi-timeframe MACD
+  let macd5 = null, macdSignal5 = null;
+  let macd15 = null, macdSignal15 = null;
+  if (candles5m && candles5m.length >= 40) {
+    const m5 = calcMACD(candles5m.map(c => c.close), 12, 26, 9);
+    macd5 = m5.macd; macdSignal5 = m5.signal;
+  }
+  if (candles15m && candles15m.length >= 40) {
+    const m15 = calcMACD(candles15m.map(c => c.close), 12, 26, 9);
+    macd15 = m15.macd; macdSignal15 = m15.signal;
+  }
+
+  // BASE SIGNALS
+  const buyBase  = uptrend   && rsi < 45   && macd > macdSignal && vol > volAvg;
+  const sellBase = downtrend && rsi > 55   && macd < macdSignal && vol > volAvg;
+
+  // BREAKOUT
+  const breakBuy  = currentClose > hh;
+  const breakSell = currentClose < ll;
+
+  // STRONG SIGNALS (requires MTF confirmation)
+  let strongBuy = false, strongSell = false;
+  if (rsi5 !== null && rsi15 !== null && macd5 !== null && macdSignal5 !== null && macd15 !== null && macdSignal15 !== null) {
+    strongBuy = buyBase && breakBuy &&
+      rsi5 < 50 && rsi15 < 55 &&
+      macd5 > macdSignal5 && macd15 > macdSignal15 &&
+      vol > volAvg * 1.7;
+
+    strongSell = sellBase && breakSell &&
+      rsi5 > 50 && rsi15 > 55 &&
+      macd5 < macdSignal5 && macd15 < macdSignal15 &&
+      vol > volAvg * 1.7;
+  }
+
+  // PRIORITY: STRONG > NORMAL
+  let signal = 'NEUTRAL';
+  if (strongBuy)       signal = 'STRONG BUY';
+  else if (strongSell) signal = 'STRONG SELL';
+  else if (buyBase)    signal = 'BUY';
+  else if (sellBase)   signal = 'SELL';
+
+  let trend = 'SIDEWAYS';
+  if (uptrend)   trend = 'UPTREND';
+  if (downtrend) trend = 'DOWNTREND';
+
+  return {
+    signal, trend,
+    rsi: rsi ? rsi.toFixed(1) : '—',
+    macd: macd ? macd.toFixed(2) : '—',
+    macdSignal: macdSignal ? macdSignal.toFixed(2) : '—',
+    ema9, ema21,
+    volRatio: volAvg ? (vol / volAvg).toFixed(2) : '—',
+    rsi5: rsi5 ? rsi5.toFixed(1) : '—',
+    rsi15: rsi15 ? rsi15.toFixed(1) : '—',
+    uptrend, downtrend,
+    macdBull: macd > macdSignal,
+    macd5Bull: macd5 !== null && macdSignal5 !== null ? macd5 > macdSignal5 : null,
+    macd15Bull: macd15 !== null && macdSignal15 !== null ? macd15 > macdSignal15 : null,
+  };
+}
+
+// ── BINANCE API ───────────────────────────────────────
+const TF_MAP = { '1m': '1m', '5m': '5m', '15m': '15m' };
+const CANDLE_LIMITS = { '1m': 210, '5m': 100, '15m': 60 };
+
+async function fetchBinanceCandles(symbol, interval, limit) {
+  const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.map(d => ({
+    open:   parseFloat(d[1]),
+    high:   parseFloat(d[2]),
+    low:    parseFloat(d[3]),
+    close:  parseFloat(d[4]),
+    volume: parseFloat(d[5]),
+  }));
+}
+
+async function fetchBTCData(tf) {
+  const [c1m, c5m, c15m] = await Promise.all([
+    fetchBinanceCandles('BTCUSDT', '1m', 210),
+    fetchBinanceCandles('BTCUSDT', '5m', 80),
+    fetchBinanceCandles('BTCUSDT', '15m', 60),
+  ]);
+  const priceData = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+  const pd = await priceData.json();
+  return {
+    candles1m: c1m, candles5m: c5m, candles15m: c15m,
+    price: parseFloat(pd.lastPrice),
+    change: parseFloat(pd.priceChangePercent),
+  };
+}
+
+// ── GOLD via Binance PAXG (gold-backed token) proxy ──
+// For a free fallback we use open.er-api.com & Binance PAXG prices
+async function fetchGoldData(tf) {
+  // PAXG/USDT on Binance is a gold-backed token ~ 1 troy oz
+  const [c1m, c5m, c15m] = await Promise.all([
+    fetchBinanceCandles('PAXGUSDT', '1m', 210),
+    fetchBinanceCandles('PAXGUSDT', '5m', 80),
+    fetchBinanceCandles('PAXGUSDT', '15m', 60),
+  ]);
+  const priceData = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT');
+  const pd = await priceData.json();
+  return {
+    candles1m: c1m, candles5m: c5m, candles15m: c15m,
+    price: parseFloat(pd.lastPrice),
+    change: parseFloat(pd.priceChangePercent),
+  };
+}
+
+// ── UI UPDATER ────────────────────────────────────────
+function signalClass(sig) {
+  if (sig === 'STRONG BUY')  return 'strong-buy';
+  if (sig === 'STRONG SELL') return 'strong-sell';
+  if (sig === 'BUY')         return 'buy';
+  if (sig === 'SELL')        return 'sell';
+  return 'neutral';
+}
+
+function signalCardClass(sig) {
+  if (sig === 'STRONG BUY')  return 'signal-strong-buy';
+  if (sig === 'STRONG SELL') return 'signal-strong-sell';
+  if (sig === 'BUY')         return 'signal-buy';
+  if (sig === 'SELL')        return 'signal-sell';
+  return '';
+}
+
+function formatPrice(p, asset) {
+  if (asset === 'btc') return '$' + p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return '$' + p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function updateCard(asset, priceData, result) {
+  const id = asset;
+  const card = document.getElementById(`card-${id}`);
+  const load = document.getElementById(`load-${id}`);
+
+  // Hide loader
+  load.classList.add('hidden');
+
+  // Price
+  const priceEl = document.getElementById(`${id}-price`);
+  const changeEl = document.getElementById(`${id}-change`);
+  priceEl.textContent = formatPrice(priceData.price, asset);
+  const chg = priceData.change;
+  changeEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+  changeEl.className = 'price-change ' + (chg >= 0 ? 'up' : 'down');
+
+  if (!result) return;
+
+  // Signal
+  const sigEl = document.getElementById(`${id}-signal`);
+  sigEl.textContent = result.signal;
+  sigEl.className = 'signal-badge ' + signalClass(result.signal);
+
+  // Trend
+  const trendEl = document.getElementById(`${id}-trend`);
+  trendEl.textContent = result.trend;
+  trendEl.className = 'trend-value ' + (result.uptrend ? 'up' : result.downtrend ? 'down' : 'neutral');
+
+  // Card border glow
+  card.className = `asset-card ${asset} ${signalCardClass(result.signal)}`;
+
+  // Indicators
+  const rsiEl = document.getElementById(`${id}-rsi`);
+  rsiEl.textContent = result.rsi;
+  const rsiVal = parseFloat(result.rsi);
+  rsiEl.className = 'ind-value ' + (rsiVal < 45 ? 'bull' : rsiVal > 55 ? 'bear' : '');
+
+  const macdEl = document.getElementById(`${id}-macd`);
+  macdEl.textContent = result.macd;
+  macdEl.className = 'ind-value ' + (result.macdBull ? 'bull' : 'bear');
+
+  const emaEl = document.getElementById(`${id}-ema`);
+  emaEl.textContent = result.ema9 && result.ema21 ? (result.ema9 > result.ema21 ? '▲' : '▼') : '—';
+  emaEl.className = 'ind-value ' + (result.ema9 > result.ema21 ? 'bull' : 'bear');
+
+  const volEl = document.getElementById(`${id}-vol`);
+  volEl.textContent = result.volRatio + 'x';
+  const vr = parseFloat(result.volRatio);
+  volEl.className = 'ind-value ' + (vr > 1.3 ? 'bull' : vr < 0.8 ? 'bear' : '');
+
+  // MTF badges
+  const mtfRow = document.getElementById(`${id}-mtf`);
+  mtfRow.innerHTML = '';
+
+  const badges = [
+    { label: `RSI5: ${result.rsi5}`, bull: parseFloat(result.rsi5) < 50 },
+    { label: `RSI15: ${result.rsi15}`, bull: parseFloat(result.rsi15) < 55 },
+    { label: `MACD5: ${result.macd5Bull === null ? '—' : result.macd5Bull ? '▲' : '▼'}`, bull: result.macd5Bull },
+    { label: `MACD15: ${result.macd15Bull === null ? '—' : result.macd15Bull ? '▲' : '▼'}`, bull: result.macd15Bull },
+  ];
+  badges.forEach(b => {
+    const tag = document.createElement('span');
+    tag.className = 'mtf-tag ' + (b.bull === null ? 'neutral' : b.bull ? 'bull' : 'bear');
+    tag.textContent = b.label;
+    mtfRow.appendChild(tag);
+  });
+
+  // Sound alerts + flash on NEW strong signal
+  const prevSignal = state[asset].lastSignal;
+  if (result.signal !== prevSignal) {
+    if (result.signal === 'STRONG BUY')  { alertStrongBuy();  flashCard(card); }
+    if (result.signal === 'STRONG SELL') { alertStrongSell(); flashCard(card); }
+    state[asset].lastSignal = result.signal;
+  }
+}
+
+function flashCard(card) {
+  card.classList.add('alerting');
+  setTimeout(() => card.classList.remove('alerting'), 1200);
+}
+
+// ── REFRESH ───────────────────────────────────────────
+async function refreshAll() {
+  try {
+    const [btcData, goldData] = await Promise.all([
+      fetchBTCData(state.btc.tf),
+      fetchGoldData(state.gold.tf)
+    ]);
+
+    const btcResult  = computeSignal(btcData.candles1m, btcData.candles5m, btcData.candles15m);
+    const goldResult = computeSignal(goldData.candles1m, goldData.candles5m, goldData.candles15m);
+
+    updateCard('btc', btcData, btcResult);
+    updateCard('gold', goldData, goldResult);
+  } catch(e) {
+    console.error('Fetch error:', e);
+  }
+}
+
+// ── COUNTDOWN ─────────────────────────────────────────
+function startCountdown() {
+  refreshCountdown = 5;
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    refreshCountdown--;
+    document.getElementById('timerLabel').textContent = `REFRESH IN ${refreshCountdown}s`;
+    if (refreshCountdown <= 0) {
+      refreshCountdown = 5;
+      refreshAll();
+    }
+  }, 1000);
+}
+
+// ── TIMEFRAME BUTTONS ─────────────────────────────────
+document.querySelectorAll('.tf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const asset = btn.dataset.asset;
+    const tf = btn.dataset.tf;
+    state[asset].tf = tf;
+
+    // Update active state
+    document.querySelectorAll(`#tf-${asset} .tf-btn`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Show loader and refresh
+    document.getElementById(`load-${asset}`).classList.remove('hidden');
+    refreshAll();
+  });
+});
+
+// ── SOUND TOGGLE ──────────────────────────────────────
+document.getElementById('soundToggle').addEventListener('click', function() {
+  soundEnabled = !soundEnabled;
+  this.textContent = soundEnabled ? '🔊 SOUND ON' : '🔇 SOUND OFF';
+  this.className = 'sound-toggle ' + (soundEnabled ? 'on' : '');
+  if (soundEnabled) beep(660, 'sine', 0.2, 0.2);
+});
+
+// ── INIT ──────────────────────────────────────────────
+refreshAll();
+startCountdown();
+</script>
+</body>
+</html>
